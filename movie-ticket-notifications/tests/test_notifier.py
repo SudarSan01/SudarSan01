@@ -67,6 +67,14 @@ class SubscriptionMatchTests(unittest.TestCase):
         self.sub.theater = "INOX Marina"
         self.assertFalse(self.sub.matches(make_show()))
 
+    def test_partial_names_match(self):
+        sub = Subscription(movie="Jailer 2", city="Chennai", theater="PVR S2",
+                           channel="console", target="me")
+        show = make_show(movie="Jailer 2 (Tamil)", theater="PVR: S2 Perambur, Chennai")
+        self.assertTrue(sub.matches(show))
+        self.assertFalse(sub.matches(make_show(movie="Jailer 2 (Tamil)", theater="PVR Grand Galada")))
+        self.assertFalse(sub.matches(make_show(movie="Jailer 3", theater="PVR: S2 Perambur")))
+
     def test_other_city_does_not_match(self):
         self.assertFalse(self.sub.matches(make_show(city="Mumbai")))
 

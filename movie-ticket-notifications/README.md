@@ -3,7 +3,7 @@
 A small Python service that watches movie showtimes and notifies you when
 ticket booking opens (and enough seats are available) for the movies you care about.
 
-- **Subscriptions** – movie + city, optionally a specific theater and a minimum seat count
+- **Subscriptions** – movie + city, optionally a specific theater and a minimum seat count. Names match on whole words, ignoring case and punctuation, so `--theater "PVR S2"` matches "PVR: S2 Perambur"
 - **Channels** – console, email (SMTP), WhatsApp (via CallMeBot) or webhook (Slack/Discord compatible)
 - **Sources** – a local JSON file or any HTTP endpoint returning the same JSON shape
 - **No duplicates** – each subscription is notified once per showtime; failed deliveries are retried on the next check

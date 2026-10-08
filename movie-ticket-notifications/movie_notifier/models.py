@@ -2,10 +2,25 @@
 
 from __future__ import annotations
 
+import re
 import uuid
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from typing import Optional
+
+
+def _words(text: str) -> list:
+    return re.findall(r"[a-z0-9]+", text.lower())
+
+
+def name_matches(wanted: str, actual: str) -> bool:
+    """True if the words of `wanted` appear, in order, in `actual`.
+
+    Lets "Jailer 2" match "Jailer 2 (Tamil)" and "PVR S2" match
+    "PVR: S2 Perambur, Chennai", ignoring case and punctuation.
+    """
+    w, a = _words(wanted), _words(actual)
+    return bool(w) and any(a[i:i + len(w)] == w for i in range(len(a) - len(w) + 1))
 
 
 @dataclass(frozen=True)
@@ -54,11 +69,11 @@ class Subscription:
     subscription_id: str = field(default_factory=lambda: uuid.uuid4().hex[:8])
 
     def matches(self, show: Showtime) -> bool:
-        if show.movie.strip().lower() != self.movie.strip().lower():
+        if not name_matches(self.movie, show.movie):
             return False
-        if show.city.strip().lower() != self.city.strip().lower():
+        if not name_matches(self.city, show.city):
             return False
-        if self.theater and show.theater.strip().lower() != self.theater.strip().lower():
+        if self.theater and not name_matches(self.theater, show.theater):
             return False
         return show.is_bookable and show.seats_available >= self.min_seats
 
