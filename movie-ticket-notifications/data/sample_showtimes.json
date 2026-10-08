@@ -1,0 +1,34 @@
+{
+  "showtimes": [
+    {
+      "showtime_id": "pvr-chn-1001",
+      "movie": "Dune: Part Three",
+      "theater": "PVR Grand Mall",
+      "city": "Chennai",
+      "starts_at": "2026-12-18T19:30:00",
+      "seats_available": 42,
+      "booking_open": true,
+      "price": 250.0,
+      "booking_url": "https://example.com/book/pvr-chn-1001"
+    },
+    {
+      "showtime_id": "inox-chn-2002",
+      "movie": "Dune: Part Three",
+      "theater": "INOX Marina",
+      "city": "Chennai",
+      "starts_at": "2026-12-18T22:00:00",
+      "seats_available": 0,
+      "booking_open": false
+    },
+    {
+      "showtime_id": "spi-blr-3003",
+      "movie": "Avengers: Doomsday",
+      "theater": "SPI Cinemas",
+      "city": "Bengaluru",
+      "starts_at": "2026-12-19T15:00:00",
+      "seats_available": 3,
+      "booking_open": true,
+      "price": 300.0
+    }
+  ]
+}

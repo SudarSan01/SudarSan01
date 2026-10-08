@@ -1,0 +1,4 @@
+__pycache__/
+*.pyc
+notifier_state.json
+*.tmp
