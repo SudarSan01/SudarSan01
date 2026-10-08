@@ -4,7 +4,7 @@ A small Python service that watches movie showtimes and notifies you when
 ticket booking opens (and enough seats are available) for the movies you care about.
 
 - **Subscriptions** – movie + city, optionally a specific theater and a minimum seat count
-- **Channels** – console, email (SMTP) or webhook (Slack/Discord compatible)
+- **Channels** – console, email (SMTP), WhatsApp (via CallMeBot) or webhook (Slack/Discord compatible)
 - **Sources** – a local JSON file or any HTTP endpoint returning the same JSON shape
 - **No duplicates** – each subscription is notified once per showtime; failed deliveries are retried on the next check
 - **No dependencies** – Python 3.9+ standard library only
@@ -58,6 +58,27 @@ State (subscriptions and sent history) is stored in `notifier_state.json`; use `
 `price` and `booking_url` are optional. To use a real ticketing site, implement a
 `ShowtimeProvider` subclass in `movie_notifier/providers.py` that returns `Showtime` objects.
 
+## WhatsApp notifications (CallMeBot)
+
+[CallMeBot](https://www.callmebot.com/blog/free-api-whatsapp-messages/) is a free
+service for sending WhatsApp messages to your own number.
+
+1. Save **+34 644 51 95 23** in your phone's contacts (check the CallMeBot page
+   above in case the number has changed).
+2. Send it this WhatsApp message: `I allow callmebot to send me messages`
+3. You'll get a reply with your API key.
+4. Set the key and subscribe with your phone number in international format:
+
+```bash
+export CALLMEBOT_API_KEY=123456
+python -m movie_notifier subscribe --movie "Dune: Part Three" --city Chennai \
+    --channel whatsapp --target +919876543210
+```
+
+CallMeBot keys belong to one phone number. To notify several numbers, give each
+its own key in the target instead: `--target +919876543210:123456`.
+Note that a key given this way is saved in `notifier_state.json`.
+
 ## Email configuration
 
 | Variable        | Default      |
@@ -75,7 +96,7 @@ State (subscriptions and sent history) is stored in `notifier_state.json`; use `
 movie_notifier/
   models.py      Showtime and Subscription
   providers.py   Showtime sources (JSON file, HTTP)
-  notifiers.py   Console, email and webhook channels
+  notifiers.py   Console, email, WhatsApp and webhook channels
   store.py       JSON persistence for subscriptions and sent history
   watcher.py     Matching, de-duplication and the polling loop
   cli.py         Command-line interface

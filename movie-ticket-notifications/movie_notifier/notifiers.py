@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 import smtplib
+import urllib.parse
 import urllib.request
 from abc import ABC, abstractmethod
 from email.message import EmailMessage
@@ -75,10 +76,37 @@ class WebhookNotifier(Notifier):
             pass
 
 
+class WhatsAppNotifier(Notifier):
+    """Sends a WhatsApp message through CallMeBot (https://www.callmebot.com).
+
+    The subscription target is the phone number in international format
+    (e.g. +919876543210). CallMeBot issues one API key per phone number:
+    set CALLMEBOT_API_KEY, or use a target of "+919876543210:APIKEY" to give
+    a number its own key.
+    """
+
+    API_URL = "https://api.callmebot.com/whatsapp.php"
+
+    def __init__(self):
+        self.api_key = os.environ.get("CALLMEBOT_API_KEY")
+
+    def send(self, sub: Subscription, show: Showtime) -> None:
+        phone, _, key = sub.target.partition(":")
+        key = key or self.api_key
+        if not key:
+            raise RuntimeError("No CallMeBot API key: set CALLMEBOT_API_KEY or use target PHONE:APIKEY")
+        query = urllib.parse.urlencode(
+            {"phone": phone.strip(), "text": format_message(sub, show), "apikey": key.strip()}
+        )
+        with urllib.request.urlopen(f"{self.API_URL}?{query}", timeout=15):
+            pass
+
+
 NOTIFIERS = {
     "console": ConsoleNotifier,
     "email": EmailNotifier,
     "webhook": WebhookNotifier,
+    "whatsapp": WhatsAppNotifier,
 }
 
 

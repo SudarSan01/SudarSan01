@@ -47,8 +47,8 @@ class Subscription:
 
     movie: str
     city: str
-    channel: str  # "console", "email" or "webhook"
-    target: str  # email address / webhook URL / display name
+    channel: str  # "console", "email", "webhook" or "whatsapp"
+    target: str  # email address / webhook URL / phone number / display name
     theater: Optional[str] = None
     min_seats: int = 1
     subscription_id: str = field(default_factory=lambda: uuid.uuid4().hex[:8])

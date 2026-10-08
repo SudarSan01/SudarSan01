@@ -1,9 +1,13 @@
 import tempfile
+import os
 import unittest
+import urllib.parse
+from unittest import mock
 from datetime import datetime
 from pathlib import Path
 
 from movie_notifier.cli import main
+from movie_notifier.notifiers import WhatsAppNotifier, get_notifier
 from movie_notifier.models import Showtime, Subscription
 from movie_notifier.providers import JsonFileProvider, ShowtimeProvider
 from movie_notifier.store import Store
@@ -105,6 +109,34 @@ class WatcherTests(unittest.TestCase):
         notifier = RecordingNotifier()
         Watcher(StaticProvider(shows), self.store, lambda _: notifier).check_once()
         self.assertEqual([s for _, s in notifier.sent], ["pvr-chn-1001"])
+
+
+class WhatsAppNotifierTests(unittest.TestCase):
+    def _send(self, target, env):
+        sub = Subscription(movie="Dune: Part Three", city="Chennai", channel="whatsapp", target=target)
+        with mock.patch.dict(os.environ, env, clear=True), \
+                mock.patch("movie_notifier.notifiers.urllib.request.urlopen") as urlopen:
+            get_notifier("whatsapp").send(sub, make_show())
+        url = urlopen.call_args[0][0]
+        self.assertTrue(url.startswith(WhatsAppNotifier.API_URL + "?"))
+        return urllib.parse.parse_qs(urllib.parse.urlparse(url).query)
+
+    def test_uses_env_api_key(self):
+        params = self._send("+919876543210", {"CALLMEBOT_API_KEY": "123456"})
+        self.assertEqual(params["phone"], ["+919876543210"])
+        self.assertEqual(params["apikey"], ["123456"])
+        self.assertIn("Dune: Part Three", params["text"][0])
+
+    def test_per_target_api_key_overrides_env(self):
+        params = self._send("+919876543210:999", {"CALLMEBOT_API_KEY": "123456"})
+        self.assertEqual(params["phone"], ["+919876543210"])
+        self.assertEqual(params["apikey"], ["999"])
+
+    def test_missing_api_key_raises(self):
+        sub = Subscription(movie="x", city="y", channel="whatsapp", target="+919876543210")
+        with mock.patch.dict(os.environ, {}, clear=True):
+            with self.assertRaises(RuntimeError):
+                WhatsAppNotifier().send(sub, make_show())
 
 
 class CliTests(unittest.TestCase):

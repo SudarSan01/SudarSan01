@@ -34,7 +34,7 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--theater", help="Restrict to a single theater")
     s.add_argument("--min-seats", type=int, default=1)
     s.add_argument("--channel", choices=sorted(NOTIFIERS), default="console")
-    s.add_argument("--target", required=True, help="Email address, webhook URL or name")
+    s.add_argument("--target", required=True, help="Email address, webhook URL, WhatsApp number or name")
 
     sub.add_parser("list", help="List subscriptions")
 
