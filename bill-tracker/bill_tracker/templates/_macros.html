@@ -1,0 +1,24 @@
+{% macro bill_card(b) -%}
+{% set days = (b.due_date - today).days %}
+<li class="card bill {% if days < 0 %}is-overdue{% elif days <= 3 %}is-soon{% endif %}">
+  <a class="bill-main" href="{{ url_for('bill_detail', bill_id=b.id) }}">
+    <span class="bill-icon" aria-hidden="true">{{ b.icon }}</span>
+    <span class="bill-text">
+      <span class="bill-title">{{ b.title }}</span>
+      <span class="bill-meta">
+        {{ fdue(b.due_date) }} · {{ fdate(b.due_date) }}{% if b.owner_name %} · {{ b.owner_name }}{% endif %}
+      </span>
+    </span>
+    {% if b.amount is not none %}<span class="bill-amount">{{ inr(b.amount) }}</span>{% endif %}
+  </a>
+  <a class="btn btn-pay" href="{{ url_for('pay_bill', bill_id=b.id) }}">Paid ✓</a>
+</li>
+{%- endmacro %}
+
+{% macro field_error(errors, name) -%}
+{% if errors.get(name) %}<p class="error">{{ errors[name] }}</p>{% endif %}
+{%- endmacro %}
+
+{% macro csrf() -%}
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+{%- endmacro %}

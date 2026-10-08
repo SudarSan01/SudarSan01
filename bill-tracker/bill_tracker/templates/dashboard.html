@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% from "_macros.html" import bill_card with context %}
+{% block content %}
+{% set any_bills = overdue or this_week or later %}
+
+{% if any_bills %}
+<section class="summary">
+  <div class="stat {% if overdue %}stat-alert{% endif %}">
+    <span class="stat-value">{{ overdue|length }}</span><span class="stat-label">overdue</span>
+  </div>
+  <div class="stat">
+    <span class="stat-value">{{ this_week|length }}</span><span class="stat-label">due this week</span>
+  </div>
+  <div class="stat">
+    <span class="stat-value">{{ inr(month_total) or "₹0" }}</span><span class="stat-label">due in 30 days</span>
+  </div>
+</section>
+{% endif %}
+
+{% if not has_members %}
+<div class="callout">
+  Add family members with their WhatsApp numbers to get reminders before due dates.
+  <a href="{{ url_for('members') }}">Add family →</a>
+</div>
+{% endif %}
+
+{% if not any_bills %}
+<div class="empty">
+  <p class="empty-title">No bills yet</p>
+  <p>Add electricity, rent, recharges, insurance, PUC, licence renewals: anything with a due date.</p>
+  <a class="btn" href="{{ url_for('new_bill') }}">+ Add the first bill</a>
+</div>
+{% endif %}
+
+{% if overdue %}
+<h2 class="section-title alert">Overdue</h2>
+<ul class="bills">{% for b in overdue %}{{ bill_card(b) }}{% endfor %}</ul>
+{% endif %}
+
+{% if this_week %}
+<h2 class="section-title">Due this week</h2>
+<ul class="bills">{% for b in this_week %}{{ bill_card(b) }}{% endfor %}</ul>
+{% endif %}
+
+{% if later %}
+<h2 class="section-title">Upcoming</h2>
+<ul class="bills">{% for b in later %}{{ bill_card(b) }}{% endfor %}</ul>
+{% endif %}
+
+{% if recent %}
+<h2 class="section-title">Paid in the last 30 days</h2>
+<ul class="card list">
+  {% for p in recent %}
+  <li>
+    <a href="{{ url_for('bill_detail', bill_id=p.bill_id) }}">{{ p.bill_title }}</a>
+    <span class="muted">{{ fdate(p.paid_on) }}{% if p.paid_by_name %} · {{ p.paid_by_name }}{% endif %}</span>
+    {% if p.amount is not none %}<span class="list-end">{{ inr(p.amount) }}</span>{% endif %}
+  </li>
+  {% endfor %}
+</ul>
+{% endif %}
+
+{% if archived_count %}
+<p class="footer-link"><a href="{{ url_for('archived') }}">Archived bills ({{ archived_count }})</a></p>
+{% endif %}
+{% endblock %}

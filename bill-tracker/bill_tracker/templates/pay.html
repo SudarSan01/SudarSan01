@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field_error, csrf with context %}
+{% block title %}Pay {{ bill.title }}{% endblock %}
+{% block content %}
+<h1>{{ bill.icon }} {{ bill.title }}</h1>
+<p class="muted">Due {{ fdate(bill.due_date) }} · {{ fdue(bill.due_date) }}</p>
+{% if bill.link %}<p><a href="{{ bill.link }}" target="_blank" rel="noopener noreferrer">Open payment link ↗</a></p>{% endif %}
+
+<form method="post" class="card form">
+  {{ csrf() }}
+  <input type="hidden" name="for_due" value="{{ bill.due_date.isoformat() }}">
+  <div class="row">
+    <label>Paid on
+      <input type="date" name="paid_on" value="{{ values.paid_on or '' }}" required>
+    </label>
+    <label>Amount (₹)
+      <input name="amount" value="{{ values.amount or '' }}" inputmode="decimal" placeholder="Optional">
+    </label>
+  </div>
+  {{ field_error(errors, "paid_on") }}{{ field_error(errors, "amount") }}
+
+  <label>Paid by
+    <select name="paid_by">
+      <option value="">Not recorded</option>
+      {% for m in members %}
+      <option value="{{ m.id }}" {% if values.paid_by == m.id|string %}selected{% endif %}>{{ m.name }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  {{ field_error(errors, "paid_by") }}
+
+  <label>Next due date
+    <input type="date" name="next_due" value="{{ values.next_due or '' }}">
+  </label>
+  <p class="hint">
+    {% if bill.repeats %}Filled in from "{{ bill.schedule|lower }}". Change it if the new date is different.{% endif %}
+    Leave empty to stop tracking this bill.
+  </p>
+  {{ field_error(errors, "next_due") }}
+
+  <label>Note
+    <input name="note" value="{{ values.note or '' }}" placeholder="Optional, e.g. paid via GPay, ref 1234">
+  </label>
+
+  <div class="actions">
+    <button class="btn" type="submit">Mark paid ✓</button>
+    <a class="btn btn-ghost" href="{{ url_for('dashboard') }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

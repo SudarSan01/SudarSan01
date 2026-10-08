@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf with context %}
+{% block title %}{{ bill.title }}{% endblock %}
+{% block content %}
+<h1>{{ bill.icon }} {{ bill.title }}</h1>
+{% if not bill.active %}<p class="tag">Archived</p>{% endif %}
+
+<div class="card">
+  <dl class="details">
+    <dt>{{ "Last due" if not bill.active else "Due" }}</dt>
+    <dd>{{ fdate(bill.due_date) }}{% if bill.active %} <span class="muted">({{ fdue(bill.due_date) }})</span>{% endif %}</dd>
+    {% if bill.amount is not none %}<dt>Amount</dt><dd>{{ inr(bill.amount) }}</dd>{% endif %}
+    <dt>Repeats</dt><dd>{{ bill.schedule }}</dd>
+    <dt>Category</dt><dd>{{ bill.category_label }}</dd>
+    <dt>Reminders</dt>
+    <dd>{% for d in bill.remind_days %}{{ "on the day" if d == 0 else d ~ (" day" if d == 1 else " days") ~ " before" }}{{ ", " if not loop.last }}{% else %}only when overdue{% endfor %}</dd>
+    {% if bill.owner_name %}<dt>Looked after by</dt><dd>{{ bill.owner_name }}</dd>{% endif %}
+    {% if bill.reference %}<dt>Reference</dt><dd>{{ bill.reference }}</dd>{% endif %}
+    {% if bill.link %}<dt>Pay at</dt><dd><a href="{{ bill.link }}" target="_blank" rel="noopener noreferrer">{{ bill.link }}</a></dd>{% endif %}
+    {% if bill.notes %}<dt>Notes</dt><dd class="pre">{{ bill.notes }}</dd>{% endif %}
+  </dl>
+  <div class="actions">
+    {% if bill.active %}<a class="btn" href="{{ url_for('pay_bill', bill_id=bill.id) }}">Mark paid ✓</a>{% endif %}
+    <a class="btn btn-ghost" href="{{ url_for('edit_bill', bill_id=bill.id) }}">Edit</a>
+  </div>
+</div>
+
+<h2 class="section-title">Payment history</h2>
+{% if payments %}
+<ul class="card list">
+  {% for p in payments %}
+  <li>
+    <span>Paid {{ fdate(p.paid_on) }}</span>
+    <span class="muted">for {{ fdate(p.due_date) }}{% if p.paid_by_name %} · {{ p.paid_by_name }}{% endif %}{% if p.note %} · {{ p.note }}{% endif %}</span>
+    {% if p.amount is not none %}<span class="list-end">{{ inr(p.amount) }}</span>{% endif %}
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p class="muted">No payments recorded yet.</p>
+{% endif %}
+
+<form method="post" action="{{ url_for('delete_bill', bill_id=bill.id) }}" class="danger-zone"
+      onsubmit='return confirm({{ ("Delete " ~ bill.title ~ " and its payment history?")|tojson }});'>
+  {{ csrf() }}
+  <button class="link danger" type="submit">Delete this bill</button>
+</form>
+{% endblock %}

@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field_error, csrf with context %}
+{% block title %}{{ "Edit " ~ bill.title if bill else "Add bill" }}{% endblock %}
+{% block content %}
+<h1>{{ "Edit bill" if bill else "Add a bill" }}</h1>
+<form method="post" class="card form">
+  {{ csrf() }}
+  <label>Name
+    <input name="title" value="{{ values.title or '' }}" placeholder="e.g. TNEB electricity, Car insurance" required autofocus>
+  </label>
+  {{ field_error(errors, "title") }}
+
+  <div class="row">
+    <label>Category
+      <select name="category" id="category">
+        {% for key, (label, icon) in categories.items() %}
+        <option value="{{ key }}" {% if values.category == key %}selected{% endif %}>{{ icon }} {{ label }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Amount (₹)
+      <input name="amount" value="{{ values.amount or '' }}" inputmode="decimal" placeholder="Optional">
+    </label>
+  </div>
+  {{ field_error(errors, "category") }}{{ field_error(errors, "amount") }}
+
+  <label>{{ "Next due date" if bill else "Due date" }}
+    <input type="date" name="due_date" value="{{ values.due_date or '' }}" required>
+  </label>
+  {{ field_error(errors, "due_date") }}
+
+  <fieldset>
+    <legend>Repeats</legend>
+    <div class="row">
+      <label class="narrow">Every
+        <input type="number" name="repeat_every" min="1" max="3650" value="{{ values.repeat_every or 1 }}">
+      </label>
+      <label>&nbsp;
+        <select name="repeat_unit">
+          {% for unit, text in [("month", "month(s)"), ("day", "day(s)"), ("year", "year(s)"), ("none", "Doesn't repeat")] %}
+          <option value="{{ unit }}" {% if values.repeat_unit == unit %}selected{% endif %}>{{ text }}</option>
+          {% endfor %}
+        </select>
+      </label>
+    </div>
+    <p class="hint">Monthly bills: 1 month. Quarterly: 3 months. Prepaid recharges: 28 or 84 days. PUC: 6 months or 1 year. Licence: 20 years.</p>
+  </fieldset>
+  {{ field_error(errors, "repeat_every") }}{{ field_error(errors, "repeat_unit") }}
+
+  <label>Remind this many days before
+    <input name="remind_days" id="remind_days" value="{{ values.remind_days or '' }}"
+           placeholder="Default: {{ default_remind[values.category or 'other'] }}">
+  </label>
+  <p class="hint">0 means on the due date. Overdue bills get a reminder every day until marked paid.</p>
+  {{ field_error(errors, "remind_days") }}
+
+  <label>Who looks after it
+    <select name="owner_id">
+      <option value="">Anyone</option>
+      {% for m in members %}
+      <option value="{{ m.id }}" {% if values.owner_id == m.id|string %}selected{% endif %}>{{ m.name }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  {{ field_error(errors, "owner_id") }}
+
+  <label>Account / policy / vehicle number
+    <input name="reference" value="{{ values.reference or '' }}" placeholder="e.g. consumer no. 04-123-456, TN09 AB 1234">
+  </label>
+
+  <label>Payment link
+    <input name="link" type="url" value="{{ values.link or '' }}" placeholder="https://">
+  </label>
+  {{ field_error(errors, "link") }}
+
+  <label>Notes
+    <textarea name="notes" rows="2">{{ values.notes or '' }}</textarea>
+  </label>
+
+  {% if bill %}
+  <label class="check"><input type="checkbox" name="active" {% if values.active %}checked{% endif %}> Active (uncheck to archive)</label>
+  {% endif %}
+
+  <div class="actions">
+    <button class="btn" type="submit">{{ "Save" if bill else "Add bill" }}</button>
+    <a class="btn btn-ghost" href="{{ url_for('bill_detail', bill_id=bill.id) if bill else url_for('dashboard') }}">Cancel</a>
+  </div>
+</form>
+
+<script>
+  // Show the category's default reminder days as the placeholder.
+  (function () {
+    var defaults = {{ default_remind|tojson }};
+    var category = document.getElementById("category");
+    var remind = document.getElementById("remind_days");
+    category.addEventListener("change", function () {
+      remind.placeholder = "Default: " + defaults[category.value];
+    });
+  })();
+</script>
+{% endblock %}

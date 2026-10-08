@@ -1,0 +1,13 @@
+{% from "_macros.html" import field_error with context %}
+<label>Name
+  <input name="name" value="{{ values.name or '' }}" required>
+</label>
+{{ field_error(errors, "name") }}
+<label>WhatsApp number
+  <input name="phone" type="tel" value="{{ values.phone or '' }}" placeholder="+919876543210">
+</label>
+{{ field_error(errors, "phone") }}
+<label>CallMeBot API key
+  <input name="callmebot_key" value="{{ values.callmebot_key or '' }}" autocomplete="off" placeholder="e.g. 123456">
+</label>
+<label class="check"><input type="checkbox" name="notify" {% if values.notify %}checked{% endif %}> Send WhatsApp reminders</label>

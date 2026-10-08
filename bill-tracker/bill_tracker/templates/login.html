@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf with context %}
+{% block title %}Log in{% endblock %}
+{% block content %}
+<form method="post" class="card form login">
+  {{ csrf() }}
+  <h1>Household login</h1>
+  <label>Password
+    <input type="password" name="password" autocomplete="current-password" required autofocus>
+  </label>
+  {% if error %}<p class="error">{{ error }}</p>{% endif %}
+  <div class="actions"><button class="btn" type="submit">Log in</button></div>
+</form>
+{% endblock %}

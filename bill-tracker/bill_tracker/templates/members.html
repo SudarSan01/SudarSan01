@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field_error, csrf with context %}
+{% block title %}Family{% endblock %}
+{% block content %}
+<h1>Family</h1>
+<p class="muted">Everyone with reminders on gets a WhatsApp message for each upcoming and overdue bill.</p>
+
+{% if members %}
+<ul class="card list">
+  {% for m in members %}
+  <li>
+    <a href="{{ url_for('edit_member', member_id=m.id) }}">{{ m.name }}</a>
+    <span class="muted">
+      {{ m.phone or "no phone" }}
+      {% if not m.notify %} · reminders off{% elif m.phone and not m.callmebot_key %} · no CallMeBot key{% endif %}
+    </span>
+    {% if m.phone %}
+    <form method="post" action="{{ url_for('test_member', member_id=m.id) }}" class="list-end">
+      {{ csrf() }}
+      <button class="btn btn-small btn-ghost" type="submit">Send test</button>
+    </form>
+    {% endif %}
+  </li>
+  {% endfor %}
+</ul>
+{% endif %}
+
+<h2 class="section-title">Add a family member</h2>
+<form method="post" class="card form">
+  {{ csrf() }}
+  {% include "_member_fields.html" %}
+  <div class="actions"><button class="btn" type="submit">Add</button></div>
+</form>
+
+<details class="card help">
+  <summary>How to get a CallMeBot key (free, about 1 minute)</summary>
+  <ol>
+    <li>On the family member's phone, save <strong>+34 644 51 95 23</strong> as a contact
+      (check <a href="https://www.callmebot.com/blog/free-api-whatsapp-messages/" target="_blank" rel="noopener noreferrer">callmebot.com</a> in case the number has changed).</li>
+    <li>Send it this WhatsApp message: <code>I allow callmebot to send me messages</code></li>
+    <li>It replies with an API key. Enter it here with their number, then tap <em>Send test</em>.</li>
+  </ol>
+</details>
+{% endblock %}

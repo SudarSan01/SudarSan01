@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Archived{% endblock %}
+{% block content %}
+<h1>Archived bills</h1>
+<p class="muted">One-time bills that were paid, and bills you stopped tracking. Edit one and tick Active to bring it back.</p>
+{% if bills %}
+<ul class="card list">
+  {% for b in bills %}
+  <li>
+    <a href="{{ url_for('bill_detail', bill_id=b.id) }}">{{ b.icon }} {{ b.title }}</a>
+    <span class="muted">last due {{ fdate(b.due_date) }}</span>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p class="muted">Nothing archived.</p>
+{% endif %}
+{% endblock %}
